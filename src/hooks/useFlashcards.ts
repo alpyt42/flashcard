@@ -9,117 +9,126 @@ export type Flashcard = {
   keywords: string[];
   theme: string;
   createdAt: string;
+  media?: string[]; // URLs ou base64
+  meta?: Record<string, any>; // Pour IA, source, etc.
 };
 
-const STORAGE_KEY = "flashcards";
+export type FlashcardMap = Record<string, Flashcard>;
 
-const DEFAULT_FLASHCARDS: Flashcard[] = [
+const STORAGE_KEY = "flashcards_v2";
+
+const DEFAULT_FLASHCARDS: FlashcardMap = {};
+[
   // Physique
   {
-    id: uuidv4(),
     question: "Quelle est la formule de l'énergie cinétique ?",
     answer: "E = 1/2 m v^2",
     keywords: ["énergie", "cinétique", "physique"],
     theme: "Physique",
-    createdAt: new Date().toISOString(),
   },
   {
-    id: uuidv4(),
     question: "Quelle est la valeur de la constante de gravitation universelle G ?",
     answer: "G ≈ 6,674 × 10⁻¹¹ N·m²/kg²",
     keywords: ["gravitation", "constante", "physique"],
     theme: "Physique",
-    createdAt: new Date().toISOString(),
   },
   {
-    id: uuidv4(),
     question: "Quelle est la 3ème loi de Newton ?",
     answer: "Action = -Réaction (à toute action s'oppose une réaction de même intensité et de sens opposé)",
     keywords: ["newton", "loi", "physique"],
     theme: "Physique",
-    createdAt: new Date().toISOString(),
   },
   {
-    id: uuidv4(),
     question: "Quelle est la formule de la force électrique (loi de Coulomb) ?",
     answer: "F = k * |q1*q2| / r^2",
     keywords: ["coulomb", "force", "électrique", "physique"],
     theme: "Physique",
-    createdAt: new Date().toISOString(),
   },
   // Maths
   {
-    id: uuidv4(),
     question: "Quelle est la dérivée de sin(x) ?",
     answer: "cos(x)",
     keywords: ["dérivée", "math", "trigonométrie"],
     theme: "Maths",
-    createdAt: new Date().toISOString(),
   },
   {
-    id: uuidv4(),
     question: "Quelle est la solution générale de l'équation ax^2 + bx + c = 0 ?",
     answer: "x = [-b ± sqrt(b²-4ac)] / 2a",
     keywords: ["équation", "quadratique", "math"],
     theme: "Maths",
-    createdAt: new Date().toISOString(),
   },
   {
-    id: uuidv4(),
     question: "Quelle est la formule de l'aire d'un cercle ?",
     answer: "A = πr²",
     keywords: ["aire", "cercle", "math"],
     theme: "Maths",
-    createdAt: new Date().toISOString(),
   },
   {
-    id: uuidv4(),
     question: "Quelle est la limite de (1 + 1/n)^n quand n tend vers l'infini ?",
     answer: "e (le nombre d'Euler, ≈ 2,718)",
     keywords: ["limite", "analyse", "math"],
     theme: "Maths",
-    createdAt: new Date().toISOString(),
   },
-];
+].forEach(card => {
+  const id = uuidv4();
+  DEFAULT_FLASHCARDS[id] = {
+    ...card,
+    id,
+    createdAt: new Date().toISOString(),
+  };
+});
+
+function migrateArrayToMap(cards: Flashcard[] | FlashcardMap): FlashcardMap {
+  if (Array.isArray(cards)) {
+    const map: FlashcardMap = {};
+    cards.forEach(card => {
+      map[card.id] = card;
+    });
+    return map;
+  }
+  return cards;
+}
 
 export function useFlashcards() {
-  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+  const [flashcards, setFlashcards] = useState<FlashcardMap>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    localforage.getItem<Flashcard[]>(STORAGE_KEY).then((data) => {
-      if (!data || data.length === 0) {
-        setFlashcards(DEFAULT_FLASHCARDS);
-        localforage.setItem(STORAGE_KEY, DEFAULT_FLASHCARDS);
+    localforage.getItem<Flashcard[] | FlashcardMap>(STORAGE_KEY).then((data) => {
+      let map: FlashcardMap;
+      if (!data) {
+        map = { ...DEFAULT_FLASHCARDS };
+        localforage.setItem(STORAGE_KEY, map);
       } else {
-        setFlashcards(data);
+        map = migrateArrayToMap(data);
       }
+      setFlashcards(map);
       setLoading(false);
     });
   }, []);
 
-  const persist = useCallback((cards: Flashcard[]) => {
+  const persist = useCallback((cards: FlashcardMap) => {
     setFlashcards(cards);
     localforage.setItem(STORAGE_KEY, cards);
   }, []);
 
   const createFlashcard = useCallback(
     (card: Omit<Flashcard, "id" | "createdAt">) => {
+      const id = uuidv4();
       const newCard: Flashcard = {
         ...card,
-        id: uuidv4(),
+        id,
         createdAt: new Date().toISOString(),
       };
-      persist([newCard, ...flashcards]);
+      persist({ ...flashcards, [id]: newCard });
     },
     [flashcards, persist],
   );
 
   const updateFlashcard = useCallback(
     (id: string, updates: Partial<Omit<Flashcard, "id" | "createdAt">>) => {
-      const updated = flashcards.map((card) =>
-        card.id === id ? { ...card, ...updates } : card,
-      );
+      if (!flashcards[id]) return;
+      const updated = { ...flashcards, [id]: { ...flashcards[id], ...updates } };
       persist(updated);
     },
     [flashcards, persist],
@@ -127,11 +136,17 @@ export function useFlashcards() {
 
   const deleteFlashcard = useCallback(
     (id: string) => {
-      const filtered = flashcards.filter((card) => card.id !== id);
-      persist(filtered);
+      if (!flashcards[id]) return;
+      const { [id]: _, ...rest } = flashcards;
+      persist(rest);
     },
     [flashcards, persist],
   );
+
+  // Pour import/export JSON direct
+  const setFlashcardsMap = useCallback((map: FlashcardMap) => {
+    persist(map);
+  }, [persist]);
 
   return {
     flashcards,
@@ -139,6 +154,6 @@ export function useFlashcards() {
     createFlashcard,
     updateFlashcard,
     deleteFlashcard,
-    setFlashcards: persist, // for bulk import/testing
+    setFlashcards: setFlashcardsMap, // pour bulk import/export
   };
 }

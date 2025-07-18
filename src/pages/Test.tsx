@@ -21,7 +21,7 @@ function shuffleArray<T>(arr: T[]): T[] {
 
 function getRandomWrongAnswers(flashcards, correct, n) {
   return shuffleArray(
-    flashcards.filter((f) => f.id !== correct.id)
+    Object.values(flashcards).filter((f) => f.id !== correct.id)
   )
     .slice(0, n)
     .map((f) => f.answer);
@@ -58,14 +58,14 @@ export default function Test() {
     setStartTime(Date.now());
   }, [flashcards.length]);
 
-  const questions = useMemo(() => shuffleArray(flashcards), [flashcards]);
+  const questions = useMemo(() => shuffleArray(Object.values(flashcards)), [flashcards]);
   const question = questions[current];
 
   const answers = useMemo(() => {
     if (!question) return [];
-    const wrongs = getRandomWrongAnswers(questions, question, 3);
+    const wrongs = getRandomWrongAnswers(flashcards, question, 3);
     return shuffleArray([question.answer, ...wrongs]);
-  }, [question, questions]);
+  }, [question, flashcards]);
 
   if (loading)
     return (

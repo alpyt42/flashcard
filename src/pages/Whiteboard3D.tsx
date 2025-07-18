@@ -1,17 +1,48 @@
-import { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useFlashcards } from "../hooks/useFlashcards";
-import { Card, Text, Badge, Group, Button } from "@mantine/core";
+import { Text, Badge, Group } from "@mantine/core";
 import Draggable from "react-draggable";
 
 export default function Whiteboard3D() {
   const { flashcards } = useFlashcards();
+
+  // Un seul useRef pour stocker tous les refs, typage compatible
+  const nodeRefs = useRef<Record<string, React.RefObject<HTMLDivElement | null>>>({});
+  const getNodeRef = (id: string) => {
+    if (!nodeRefs.current[id]) {
+      nodeRefs.current[id] = React.createRef<HTMLDivElement>();
+    }
+    return nodeRefs.current[id];
+  };
+
   // Position initiale aléatoire pour chaque card
-  const initialPositions = useRef(
+  const [positions, setPositions] = useState<{ [id: string]: { x: number; y: number } }>(() =>
     Object.fromEntries(
       flashcards.map((c) => [c.id, { x: Math.random() * 400, y: Math.random() * 300 }])
     )
   );
-  const [positions, setPositions] = useState(initialPositions.current);
+
+  // Si le nombre de flashcards change (ajout/suppression), on réinitialise les positions pour les nouvelles cartes
+  useEffect(() => {
+    setPositions(prev => {
+      const newPositions = { ...prev };
+      let changed = false;
+      flashcards.forEach(card => {
+        if (!newPositions[card.id]) {
+          newPositions[card.id] = { x: Math.random() * 400, y: Math.random() * 300 };
+          changed = true;
+        }
+      });
+      // Supprime les positions orphelines
+      Object.keys(newPositions).forEach(id => {
+        if (!flashcards.find(card => card.id === id)) {
+          delete newPositions[id];
+          changed = true;
+        }
+      });
+      return changed ? { ...newPositions } : prev;
+    });
+  }, [flashcards]);
 
   const handleDrag = (id: string, e: any, data: any) => {
     setPositions((prev) => ({ ...prev, [id]: { x: data.x, y: data.y } }));
@@ -30,10 +61,12 @@ export default function Whiteboard3D() {
       {flashcards.map((card) => (
         <Draggable
           key={card.id}
+          nodeRef={getNodeRef(card.id)}
           position={positions[card.id] || { x: 0, y: 0 }}
           onDrag={(e, data) => handleDrag(card.id, e, data)}
         >
           <div
+            ref={getNodeRef(card.id)}
             style={{
               position: "absolute",
               zIndex: 2,

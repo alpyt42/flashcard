@@ -10,13 +10,15 @@ import {
   Center,
 } from '@mantine/core';
 import { useHotkeys } from '@mantine/hooks';
-import { IconSun, IconMoon } from '@tabler/icons-react';
+import { IconSun, IconMoon, IconSettings } from '@tabler/icons-react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Study from './pages/Study';
 import Test from './pages/Test';
 import Whiteboard3D from './pages/Whiteboard3D';
 import DinoGame from './pages/DinoGame';
+import SettingsModal from './components/SettingsModal';
+import IAImport from './pages/IAImport';
 
 function DarkModeToggle() {
   const { setColorScheme } = useMantineColorScheme();
@@ -45,28 +47,54 @@ function Navigation() {
       <Button component={Link} to="/test" variant={location.pathname === '/test' ? 'filled' : 'subtle'}>Test</Button>
       <Button component={Link} to="/whiteboard" variant={location.pathname === '/whiteboard' ? 'filled' : 'subtle'}>3D Whiteboard</Button>
       <Button component={Link} to="/dino" variant={location.pathname === '/dino' ? 'filled' : 'subtle'}>Dino</Button>
+      <Button component={Link} to="/ia" variant={location.pathname === '/ia' ? 'filled' : 'subtle'}>IA</Button>
     </Group>
   );
 }
 
 export default function App() {
+  const [settingsOpen, setSettingsOpen] = useState(false);
   return (
     <MantineProvider defaultColorScheme="auto">
       <BrowserRouter>
         <AppShell header={{ height: 50 }} padding="md">
           <AppShell.Header>
-            <Group justify="space-between"><Navigation /><DarkModeToggle /></Group>
+            <Group justify="space-between">
+              <Navigation />
+              <Group>
+                <ActionIcon
+                  variant="subtle"
+                  size={32}
+                  onClick={() => setSettingsOpen(true)}
+                  title="Paramètres"
+                  aria-label="Paramètres"
+                >
+                  <IconSettings size={22} />
+                </ActionIcon>
+                <DarkModeToggle />
+              </Group>
+            </Group>
           </AppShell.Header>
           <AppShell.Main>
-            <Center style={{ minHeight: '100vh' }}>
+            <div style={{
+              minHeight: '100vh',
+              width: '100vw',
+              background: '#f8fafc',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+            }}>
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/study" element={<Study />} />
                 <Route path="/test" element={<Test />} />
                 <Route path="/whiteboard" element={<Whiteboard3D />} />
                 <Route path="/dino" element={<DinoGame />} />
+                <Route path="/ia" element={<IAImport />} />
               </Routes>
-            </Center>
+              <SettingsModal opened={settingsOpen} onClose={() => setSettingsOpen(false)} />
+            </div>
           </AppShell.Main>
         </AppShell>
       </BrowserRouter>

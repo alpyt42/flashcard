@@ -62,8 +62,7 @@ export function FlashcardForm({
           onChange={setTheme}
           required
           searchable
-          creatable
-          getCreateLabel={(q) => `+ Create "${q}"`}
+          creatable="true"
         />
         <Group position="right">
           {onCancel && (
