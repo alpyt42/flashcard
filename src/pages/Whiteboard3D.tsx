@@ -18,7 +18,7 @@ export default function Whiteboard3D() {
   // Position initiale aléatoire pour chaque card
   const [positions, setPositions] = useState<{ [id: string]: { x: number; y: number } }>(() =>
     Object.fromEntries(
-      flashcards.map((c) => [c.id, { x: Math.random() * 400, y: Math.random() * 300 }])
+      Object.values(flashcards).map((c) => [c.id, { x: Math.random() * 400, y: Math.random() * 300 }])
     )
   );
 
@@ -27,7 +27,7 @@ export default function Whiteboard3D() {
     setPositions(prev => {
       const newPositions = { ...prev };
       let changed = false;
-      flashcards.forEach(card => {
+      Object.values(flashcards).forEach(card => {
         if (!newPositions[card.id]) {
           newPositions[card.id] = { x: Math.random() * 400, y: Math.random() * 300 };
           changed = true;
@@ -35,7 +35,7 @@ export default function Whiteboard3D() {
       });
       // Supprime les positions orphelines
       Object.keys(newPositions).forEach(id => {
-        if (!flashcards.find(card => card.id === id)) {
+        if (!Object.values(flashcards).find(card => card.id === id)) {
           delete newPositions[id];
           changed = true;
         }
@@ -58,7 +58,7 @@ export default function Whiteboard3D() {
         overflow: "auto",
       }}
     >
-      {flashcards.map((card) => (
+      {Object.values(flashcards).map((card) => (
         <Draggable
           key={card.id}
           nodeRef={getNodeRef(card.id)}
