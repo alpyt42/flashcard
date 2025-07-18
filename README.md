@@ -1,55 +1,108 @@
 # Flashcard Revision Web-App
 
-A fast, offline-first flashcard app for efficient spaced repetition and study. Built with React, Mantine, and localForage for instant, persistent, and distraction-free revision.
+Une app de révision de flashcards rapide, offline-first, et extensible, avec quiz, whiteboard, et mini-jeux.
 
-## 🚀 Quick Start
+---
 
-```sh
-npm install
-npm run dev
-```
+## 🚦 Prérequis
 
-## ✨ Features
+- **Node.js 20 ou supérieur** (Node 16/18 non supporté)
+- **npm** (installé avec Node)
 
-- **Flashcard CRUD**: Create, edit, delete cards (question, answer, keywords, theme, date)
-- **Fuzzy Search**: Instant search across question, answer, and keywords (Fuse.js)
-- **Date Range Filter**: Filter cards by creation date (Mantine DatePicker)
-- **Theme Color Coding**: Each theme gets a consistent Mantine color
-- **Responsive UI**: Masonry grid on desktop, swipe/stack on mobile
-- **Dark Mode**: Toggle with UI or <kbd>Ctrl/Cmd+J</kbd>
-- **Offline-First**: All data stored in IndexedDB (localForage)
-- **Study Mode**: Sequential/shuffle card viewer with flip
-- **Smooth Transitions**: Mantine and Framer Motion
+### Installer Node.js 20 avec nvm (recommandé)
 
-## 🛠 Tech Stack
+1. **Installer nvm** (Node Version Manager) :
+   ```sh
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+   # Redémarre ton terminal ou fais :
+   export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+   ```
+2. **Installer et utiliser Node 20** :
+   ```sh
+   nvm install 20
+   nvm use 20
+   nvm alias default 20
+   node -v # Doit afficher v20.x.x
+   ```
 
-- **React 18 + Vite + TypeScript 5**
-- **Mantine v8** (UI, hooks, theming)
-- **localForage** (IndexedDB persistence)
-- **Fuse.js** (fuzzy search)
-- **Framer Motion** (animations)
-- **Vitest + React Testing Library** (tests)
-- **ESLint + Prettier** (lint/format)
+---
 
-## 📁 Directory Structure
+## 🚀 Installation
 
+1. **Cloner le projet**
+   ```sh
+   git clone <url-du-repo>
+   cd flashcard-app
+   ```
+2. **Installer les dépendances**
+   ```sh
+   npm install
+   ```
+3. **Lancer le serveur de développement**
+   ```sh
+   npm run dev
+   # Ouvre http://localhost:5173/
+   ```
+
+---
+
+## ✨ Fonctionnalités principales
+- **Flashcard CRUD** : Créer, éditer, supprimer des cartes (question, réponse, mots-clés, thème, date)
+- **Recherche instantanée** (Fuse.js)
+- **Filtre par date**
+- **Couleurs par thème**
+- **UI responsive (Mantine)**
+- **Mode sombre** (toggle ou Ctrl/Cmd+J)
+- **Offline-first** (IndexedDB/localForage)
+- **Quiz/Test** : QCM chronométré, score, feedback
+- **Whiteboard 3D** : Déplacement libre des cartes façon post-it
+- **Mini-jeu dinosaure** : Type Chrome offline
+
+---
+
+## 🛠 Stack technique
+- React 18 + Vite + TypeScript 5
+- Mantine v8 (UI, hooks, theming)
+- localForage (IndexedDB)
+- Fuse.js (fuzzy search)
+- Framer Motion (animations)
+- react-draggable (whiteboard)
+- Vitest + React Testing Library (tests)
+- ESLint + Prettier
+
+---
+
+## 📁 Structure
 ```
 src/
   components/
-    FlashcardCard.tsx
-    FlashcardForm.tsx
-    SearchBar.tsx
-    DateRangeFilter.tsx
   hooks/
-    useFlashcards.ts
   pages/
-    Home.tsx
-    Study.tsx
   App.tsx
   main.tsx
 ```
 
-## ⚖️ Technical Trade-offs
+---
 
-This app prioritizes speed, clarity, and offline usability. All state is stored locally for instant persistence and privacy, but this means no sync or multi-device support. Mantine v8's new color scheme API is used for robust dark mode, but some breaking changes required careful reading of docs. Fuse.js enables fast, fuzzy search even for 1,000+ cards, but for very large datasets, a server or worker-based search would be better. The UI is intentionally minimal to reduce distractions and maximize legibility. All code is fully typed, and basic tests are included for reliability. The stack is chosen for rapid iteration and modern best practices.
-# flashcard
+## ⚖️ Notes techniques & trade-offs
+- **Node 20+ obligatoire** : Vite, Mantine et de nombreuses dépendances modernes ne fonctionnent plus avec Node 16/18 (API crypto, ESM, etc).
+- **Offline-first** : Toutes les données sont locales (pas de sync multi-device).
+- **Recherche rapide** : Fuse.js pour 1000+ cartes instantanément.
+- **UI minimaliste** : Focus sur la lisibilité et la rapidité.
+- **Tests unitaires** : Vitest/RTL pour la fiabilité.
+
+---
+
+## 🏁 Commandes utiles
+- `npm run dev` : Lancer le serveur de dev
+- `npm run build` : Build de production
+- `npm run preview` : Prévisualiser le build
+- `npm test` : Lancer les tests (si configuré)
+
+---
+
+## 💡 Besoin d’aide ?
+- Si tu as une erreur liée à Node, vérifie ta version avec `node -v`.
+- Si tu veux réinitialiser les cartes, vide le stockage local (IndexedDB/localforage) dans les DevTools.
+- Pour toute question, ouvre une issue ou contacte le mainteneur.
